@@ -24,8 +24,7 @@ $(document).ready(function()
     var interval;
     var player;
     keys = [];
-    var score= 0;
-    //hongotl = new Hongo;
+    var myScore;
 
 //Checar colision
     function collisionHongo(){
@@ -35,6 +34,7 @@ $(document).ready(function()
               }
             });
           }
+
     function CheckCollition(){
         this.crashWith = function(hongo){
             return  (this.x < hongo.x + hongo.width) &&
@@ -43,7 +43,6 @@ $(document).ready(function()
                     (this.y + this.height > hongo.y);
         }
     }
-
           
 //Estas son mis images
 	var images = {
@@ -68,13 +67,10 @@ $(document).ready(function()
     function startGame(){
         frames= 0;
         interval = setInterval(update,1000/60)
+        
 
     }
-    function drawScore() {
-        ctx.font = "16px Arial";
-        ctx.fillStyle = "#0095DD";
-        ctx.fillText("Score: "+score, 8, 20);
-    }
+
 // Esta funcion para parar el juego
     function stopGame(){
         ctx.fillStyle = "black";
@@ -86,7 +82,7 @@ $(document).ready(function()
 
 // Esta funcion refreshea todo y le da movimiento al jugador
 	function update(){
-        // Aqui esta todo lo de el movimiento del jugador
+    // Aqui esta todo lo de el movimiento del jugador
         //Aqui es el listener para los keys
             if (keys[38] || keys[32]) {
             // up arrow or space
@@ -134,24 +130,21 @@ $(document).ready(function()
 		    {
 		    	player.x = 0;
             }
-        // Esto cambia su imagen cuando te mueves
-            if (player.jumping){
-                 player.image.src = 'pictures/mariojump.png'}
-            else if(player.left){
-                player.image.src = 'pictures/mario.png'
-                 }
-                 else{
-                    player.image.src = 'pictures/mario2.png'
-                 }
+        if (player.jumping){
+             player.image.src = 'pictures/mariojump.png'}
+        else if(player.left){
+            player.image.src = 'pictures/mario.png'
+             }
+             else{
+                player.image.src = 'pictures/mario2.png'
+             }
 
-        // Esto es para hacer clear canvas, dibujar todo y hacer refresh
-            ctx.clearRect(0, 0, width, height);
-            background.draw()
-            drawMyPlayer();
-            drawMyHongo();
-            drawScore();
-           //killEnemy();
-        }
+    // Esto es para hacer clear canvas, dibujar todo y hacer refresh
+        ctx.clearRect(0, 0, width, height);
+        background.draw()
+        drawMyPlayer();
+        drawMyHongo();
+        collisionHongo()}
 
 // Este es mi background
 	background = {
@@ -172,7 +165,7 @@ $(document).ready(function()
     player= new Player(ctx)
     function Player(ctx){
         CheckCollition.call(this)
-        this.x = 20,
+        this.x = 480,
         this.y = 165,
         this.width = 20,
         this.height = 20,
@@ -242,5 +235,6 @@ $(document).ready(function()
 	{
 		keys[e.keyCode] = false;
     });
-//killEnemy();
+
+
 });
