@@ -1,25 +1,44 @@
 $(document).ready(function()
 {
-    var interval;
-
+    
 // Este es el canvas
 	var canvas = document.getElementById("canvas"),
-		ctx = canvas.getContext("2d"),
-		width = 500,
-		height = 200;
-
+    ctx = canvas.getContext("2d"),
+    width = 500,
+    height = 200;
+    
 //Estas son las vars
 	keys = [],
-	gravity = .3;
+	gravity = .09;
 	canvas.width = width;
 	canvas.height = height;
 	x = 0
 	friction = .9
-	hongoArr = []
+    hongoArr = []
 	var frames = 0
     var hongo;
     var globalId;
+    var interval;
+    var player;
 
+//Checar colision
+    function collisionHongo(){
+            hongoArr.forEach(function(hongo){
+              if(player.crashWith(hongo)){
+                stopGame();
+              }
+            });
+          }
+
+    function CheckCollition(){
+        this.crashWith = function(hongo){
+            return  (this.x < hongo.x + hongo.width) &&
+                    (this.x + this.width > hongo.x) &&
+                    (this.y < hongo.y + hongo.height) &&
+                    (this.y + this.height > hongo.y);
+        }
+    }
+          
 //Estas son mis images
 	var images = {
 		bg: 'pictures/background2.png',
@@ -40,11 +59,11 @@ $(document).ready(function()
 	background1.src = images.bg
 
 // Esta funcion para empezar el juego
-function startGame(){
-    frames= 0;
-    interval = setInterval(update,1000/60)
+    function startGame(){
+        frames= 0;
+        interval = setInterval(update,1000/60)
 
-}
+    }
 
 // Esta funcion para parar el juego
     function stopGame(){
@@ -55,7 +74,7 @@ function startGame(){
     }
 
 
-// Esta funcion refreshea todo y le da movimiento al jugadoe
+// Esta funcion refreshea todo y le da movimiento al jugador
 	function update(){
     // Aqui esta todo lo de el movimiento del jugador
 		player.velX *= friction;
@@ -75,12 +94,14 @@ function startGame(){
 		else if (player.x <= 0)
 		{
 			player.x = 0;
-		}
-    // Esto es para hacer clear canvas, dibujar todo y hacer refresh
+        }
+        
+// Esto es para hacer clear canvas, dibujar todo y hacer refresh
     ctx.clearRect(0, 0, width, height);
     background.draw();
-    player.draw();
+    drawMyPlayer();
     drawMyHongo();
+    collisionHongo()
     
     		
 	}
@@ -99,31 +120,42 @@ function startGame(){
 		}
 	}
 
+
 // Este es mi jugador
-	player = {
-		x: width / 2,
-		y: 80,
-		width: 20,
-		height: 20,
-		speed: 3,
-		velX: 0,
-		velY: 0,
-		jumping: false,
-		draw: function()
-		{
-			ctx.drawImage(mar, this.x, this.y, 20, 20);
-		}
-	};
+    player= new Player(ctx)
+    function Player(ctx){
+        CheckCollition.call(this)
+        this.x = 480,
+        this.y = 165,
+        this.width = 20,
+        this.height = 20,
+        this.speed = 1,
+        this.velX = 0,
+        this.velY = 0;
+        this.ctx = ctx
+        this.image = new Image();
+        this.image.src = 'pictures/mario.png'
+        this.jumping= false
+    };
+    //Esto dibuja a player
+        Player.prototype.drawPlayer = function()
+        {
+        this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)}   
+        function drawMyPlayer()
+	    {
+	    	player.drawPlayer()
+	    }
+
 //Este es un enemigo el hongo
-	function Hongo(ctx)
-	{
-		this.x = 480,
-			this.y = 165,
-			this.width = 20,
-			this.height = 20,
-			this.speed = 1,
-			this.velX = 0,
-			this.velY = 0;
+	function Hongo(ctx){
+        CheckCollition.call(this)
+        this.x = 480,
+		this.y = 165,
+		this.width = 20,
+		this.height = 20,
+		this.speed = 1,
+		this.velX = 0,
+		this.velY = 0;
 		this.ctx = ctx
 		this.image = new Image();
 		this.image.src = 'pictures/giphy.png'
@@ -141,14 +173,14 @@ function startGame(){
     // Esto los dibuja
 	function drawMyHongo()
 	{
-		if (frames % 100 === 0) generateHongo();
+		if (frames % 0 === 0) generateHongo();
 		hongoArr.forEach(function(hongo)
 		{
 			hongo.drawHongo()
 		})
 	}
 
-// Estas son las funciones y propiedades para el movimiento
+// Estas son las funciones y listeners para el movimiento del player
     player.moveLeft = function()
 	{
 		console.log('left')
@@ -160,7 +192,7 @@ function startGame(){
 		if (!player.jumping)
 		{
 			player.jumping = true;
-			player.velY = -player.speed * 2;
+            player.velY = -player.speed * 2;
 		};
 	}
 	player.moveRight = function()
@@ -168,8 +200,14 @@ function startGame(){
 		console.log('right')
 		player.velX += 2;
 
-	}
-//Este es el movimiento de el jugador
+    }
+    
+    player.upRight = function(){
+        player.velX += 2;
+        player.jumping = true
+        player.velY = -player.speed * 2
+    }
+    //Este es el movimiento de el jugador
 	document.addEventListener("keydown",
 		function(e)
 		{
@@ -184,9 +222,8 @@ function startGame(){
 				case 39:
 					player.moveRight();
                     break;
-                case 27:
-                console.log('para ya!!!')
-                stopGame(update)
+                case 38 && 39:
+                    player.upRight();
 			}
 		});
 
@@ -198,6 +235,13 @@ function startGame(){
 	document.body.addEventListener("keyup", function(e)
 	{
 		keys[e.keyCode] = false;
-	});
-    startGame()
+    });
+// Para saltar y avanzar al mismo tiempo
+
+    
+    
+    
+    
+startGame()
+
 });
