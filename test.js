@@ -6,9 +6,6 @@ $(document).ready(function()
     ctx = canvas.getContext("2d"),
     width = 500,
     height = 200;
-    function startScreen(){
-        ctx.fillRect(0,0,500,200)
-    }
     
 //Estas son las vars
 	keys = [],
@@ -23,9 +20,6 @@ $(document).ready(function()
     var globalId;
     var interval;
     var player;
-    keys = [];
-    var score= 0;
-    //hongotl = new Hongo;
 
 //Checar colision
     function collisionHongo(){
@@ -35,6 +29,7 @@ $(document).ready(function()
               }
             });
           }
+
     function CheckCollition(){
         this.crashWith = function(hongo){
             return  (this.x < hongo.x + hongo.width) &&
@@ -43,7 +38,6 @@ $(document).ready(function()
                     (this.y + this.height > hongo.y);
         }
     }
-
           
 //Estas son mis images
 	var images = {
@@ -70,11 +64,7 @@ $(document).ready(function()
         interval = setInterval(update,1000/60)
 
     }
-    function drawScore() {
-        ctx.font = "16px Arial";
-        ctx.fillStyle = "#0095DD";
-        ctx.fillText("Score: "+score, 8, 20);
-    }
+
 // Esta funcion para parar el juego
     function stopGame(){
         ctx.fillStyle = "black";
@@ -86,72 +76,35 @@ $(document).ready(function()
 
 // Esta funcion refreshea todo y le da movimiento al jugador
 	function update(){
-        // Aqui esta todo lo de el movimiento del jugador
-        //Aqui es el listener para los keys
-            if (keys[38] || keys[32]) {
-            // up arrow or space
-            if(!player.jumping){
-            player.jumping = true;
-            player.image.src = "pictures/mariojump.png";
-            player.velY = -player.speed*2;
-            }
-            }
-            if (keys[39]) {
-                // right arrow
-                if (player.velX < player.speed) {             
-                    player.velX++;     
-                    player.right = true;
-                    player.left = false; 
-                                  
-                } 
-            }     
-            if (keys[37]) {         
-                // left arrow         
-                if (player.velX > -player.speed) {
-                    player.velX--;
-                    player.left = true;
-                    player.right = false;
-                }
-                
-            }
-        //Aqui es todo lo de su fisica y para que no se salga    
-            player.velX *= friction;
-		    player.velY += gravity;
-		    player.x += player.velX;
-		    player.y += player.velY;
-		    frames++;
-		    if (player.y >= height - player.height - 15)
-		    {
-		    	player.y = height - player.height - 15;
-                player.jumping = false;
-                player.image.src = "pictures/mario.png"
-		    }
-		    if (player.x >= width - player.width)
-		    {
-		    	player.x = width - player.width;
-		    }
-		    else if (player.x <= 0)
-		    {
-		    	player.x = 0;
-            }
-        // Esto cambia su imagen cuando te mueves
-            if (player.jumping){
-                 player.image.src = 'pictures/mariojump.png'}
-            else if(player.left){
-                player.image.src = 'pictures/mario.png'
-                 }
-                 else{
-                    player.image.src = 'pictures/mario2.png'
-                 }
-
-        // Esto es para hacer clear canvas, dibujar todo y hacer refresh
-            ctx.clearRect(0, 0, width, height);
-            background.draw()
-            drawMyPlayer();
-            drawMyHongo();
-            drawScore();
-           //killEnemy();
+    // Aqui esta todo lo de el movimiento del jugador
+		player.velX *= friction;
+		player.velY += gravity;
+		player.x += player.velX;
+		player.y += player.velY;
+		frames++;
+		if (player.y >= height - player.height - 15)
+		{
+			player.y = height - player.height - 15;
+			player.jumping = false;
+		}
+		if (player.x >= width - player.width)
+		{
+			player.x = width - player.width;
+		}
+		else if (player.x <= 0)
+		{
+			player.x = 0;
         }
+        
+// Esto es para hacer clear canvas, dibujar todo y hacer refresh
+    ctx.clearRect(0, 0, width, height);
+    background.draw();
+    drawMyPlayer();
+    drawMyHongo();
+    collisionHongo()
+    
+    		
+	}
 
 // Este es mi background
 	background = {
@@ -172,19 +125,17 @@ $(document).ready(function()
     player= new Player(ctx)
     function Player(ctx){
         CheckCollition.call(this)
-        this.x = 20,
+        this.x = 480,
         this.y = 165,
         this.width = 20,
         this.height = 20,
-        this.speed = 1.9,
+        this.speed = 1,
         this.velX = 0,
         this.velY = 0;
         this.ctx = ctx
         this.image = new Image();
         this.image.src = 'pictures/mario.png'
         this.jumping= false
-        this.left = true;
-        this.right = false;
     };
     //Esto dibuja a player
         Player.prototype.drawPlayer = function()
@@ -222,16 +173,64 @@ $(document).ready(function()
     // Esto los dibuja
 	function drawMyHongo()
 	{
-		if (frames % 120 === 0) generateHongo();
+		if (frames % 0 === 0) generateHongo();
 		hongoArr.forEach(function(hongo)
 		{
 			hongo.drawHongo()
 		})
 	}
 
+// Estas son las funciones y listeners para el movimiento del player
+    player.moveLeft = function()
+	{
+		console.log('left')
+		player.velX -= 2;
+	}
+	player.moveUp = function()
+	{
+		console.log('up')
+		if (!player.jumping)
+		{
+			player.jumping = true;
+            player.velY = -player.speed * 2;
+		};
+	}
+	player.moveRight = function()
+	{
+		console.log('right')
+		player.velX += 2;
+
+    }
+    
+    player.upRight = function(){
+        player.velX += 2;
+        player.jumping = true
+        player.velY = -player.speed * 2
+    }
+    //Este es el movimiento de el jugador
+	document.addEventListener("keydown",
+		function(e)
+		{
+			switch (e.keyCode)
+			{
+				case 37:
+					player.moveLeft();
+					break;
+				case 38:
+					player.moveUp();
+					break;
+				case 39:
+					player.moveRight();
+                    break;
+                case 38 && 39:
+                    player.upRight();
+			}
+		});
+
 //Esto es para poder apretar mas de una tecla      
 	document.body.addEventListener("keydown", function(e)
 	{
+        keys[e.keyCode] = true;
         keys[e.keyCode] = true;
         if (keys[27]){
             $('.startScreen').hide();
@@ -242,5 +241,12 @@ $(document).ready(function()
 	{
 		keys[e.keyCode] = false;
     });
-//killEnemy();
+// Para saltar y avanzar al mismo tiempo
+
+    
+    
+    
+    
+startGame()
+
 });
