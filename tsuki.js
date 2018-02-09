@@ -12,9 +12,8 @@ $(document).ready(function()
     function selectCharacter(){
         ctx.fillRect(0,0,500,200)
     }
-    
-    
-//Estas son las vars
+ 
+//Estas son las vars y tambien el audio
 	keys = [],
 	gravity = .1;
 	canvas.width = width;
@@ -24,21 +23,43 @@ $(document).ready(function()
     hongoArr = []
     minionArr = []
 	var frames = 0
-    var hongo = new Hongo;
-    var minion = new Minion;
+    var hongo = new Hongo();
+    var minion = new Minion();
     var globalId;
     var interval;
     var player;
     keys = [];
-    var myScore;
-    player = new Player
+    var score = 0
+    player = new Player()
+    var audio = new Audio('audio/Metroid.mp3');
+    var fakeWin = new Audio('audio/fakevictory.mp3');
+    var finalbattle= new Audio('audio/bossbattle.mp3')
+    var win = new Audio('audio/victory.mp3')
+    var imageHongo;
+    var imageMinion;
+    var test = 0
+    platforms=[];
+    player= new Player(ctx)
 
-//Checar colision
+//Funciones audio
+    function playtamales(){
+    if (score===6){
+        audio.pause()
+        
+    }}
+   function playboss(){
+       if (score===7){
+        finalbattle.play();
+       }
+   }
+
+//Checar colision 
     function collisionHongo(){
             hongoArr.forEach(function(hongo, index){
               if(player.crashWith(hongo)){
                 if (player.y<hongo.y){
                     hongoArr.splice(index, 1);
+                    score ++
                 } else {
                     stopGame();
                 }
@@ -57,46 +78,32 @@ $(document).ready(function()
                 return true}
         }
     }
-
-    function collisionBliss(){
-        
-          if(player.crashWith(bliss)){
-                stopGame();
-            }
-        }
-    function checkBlissCollision(){
-      this.crashWith = function(bliss){
-        return  (this.x < bliss.x + bliss.width) &&
-                (this.y < bliss.y + bliss.height) &&
-                (this.y + this.height > bliss.y) &&
-                (this.x + this.width > bliss.x);
-    }}
-function checkMinionCollision(){
-  minionArr.forEach(function(minion){
-    if(player.crashWith(minion)){
-      stopGame();
-    }})}
+    function checkMinionCollision(){
+      minionArr.forEach(function(minion){
+        if(player.crashWith(minion)){
+          stopGame();
+        }})}
     function collisionMinion(){
-        this.crashWith = function(minion){
-          return  (this.x < minion.x + minion.width) &&
-                  (this.x + this.width > minion.x) &&
-                  (this.y < minion.y + minion.height) &&
-                  (this.y + this.height > minion.y);
-        }
-      }
-
+            this.crashWith = function(minion){
+              return  (this.x < minion.x + minion.width) &&
+                      (this.x + this.width > minion.x) &&
+                      (this.y < minion.y + minion.height) &&
+                      (this.y + this.height > minion.y);
+            }
+          }
 
     function killHongo(){
-        hongoArr.splice()
-    }
+            hongoArr.splice()
+        }
           
 //Estas son mis images
 	var images = {
-		bg: 'pictures/background2.png',
+		bg: 'pictures/background.png',
 		marioright: 'pictures/mario2.png',
 		marioleft: 'pictures/mario.png',
         giphy: 'pictures/giphy.png',
         test: 'pictures/poulpi.png',
+        platform: 'pictures/platform.png'
 	}
     // Mario Volteando a la derecha
 	var mar = new Image()
@@ -110,22 +117,36 @@ function checkMinionCollision(){
 	var mar3 = new Image()
     mar3.src = "pictures/mariojump.png"
 
+    //Foto de plataforma
+        var plat = new Image()
+        plat.src= images.platform;
+
     //Foto del hongo
 	var hongoimg = new Image()
 	hongoimg.src = images.giphy;
 
     //Fondo de pantalla
 	var background1 = new Image()
-	background1.src = images.bg
+    background1.src = images.bg
+    //Agarrar imagen random para el enemigo
+    var minionsImagesArray = ['pictures/ghost.png','pictures/box.png','pictures/giphy.png','pictures/ojo.png','pictures/poulpi.png'];
+    function chooseImage(){
+    var num = Math.floor(Math.random() * 5);
+    imageHongo= minionsImagesArray[num];
+
+    }
+    var minionsBlissImagesArray = ['pictures/Quesadilla.png','pictures/burrito.png','pictures/taco.png','pictures/Chile.png','pictures/Totopo.png'];
+    function chooseBlissImage(){
+    var num1 = Math.floor(Math.random() * 5);
+    imageMinion= minionsBlissImagesArray[num1];
+
+    }
 
 // Esta funcion para empezar el juego
     function startGame(){
         frames= 0;
         interval = setInterval(update,1000/60)
-        
-
     }
-
 // Esta funcion para parar el juego
     function stopGame(){
         ctx.fillStyle = "black";
@@ -191,19 +212,45 @@ function checkMinionCollision(){
                 player.image = mar2;
             } else if (player.right){
                     player.image = mar;
-            }
+            }       
 
     // Esto es para hacer clear canvas, dibujar todo y hacer refresh
         ctx.clearRect(0, 0, width, height);
         background.draw()
-        spawnBliss();
-        //drawMyHongo();
+        drawMyHongo();
         drawMyMinion();
         collisionHongo();
-        collisionBliss();
         collisionMinion();
-        drawMyPlayer();
+        player.drawPlayer();
+        drawScore();
+        chooseImage();
+        spawnBliss();
+        chooseBlissImage();
+        checkIfMinionCrash();
+        playtamales();
+        playboss();
+        victory();
+
+        if (frames%200===0){
+            platforms.push (new Platform(ctx, 500, 120));
+        }
+        for (var p=0; p<platforms.length; p++){
+            platforms[p].x--;
+            platforms[p].drawPlatform(); 
+            if (platforms[p].crashWith(player)){
+            player.jumping = false;
+            player.y = (plat.y+100)
+            player.velY= 0;
+            }
+            
+        }
     }
+// Este es el score
+    function drawScore() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "#000000";
+        ctx.fillText("Score: "+score, 8, 20);
+    }         
 // Este es mi background
 	background = {
 		posX: 0,
@@ -218,10 +265,29 @@ function checkMinionCollision(){
 		}
 	}
 
+// Estas son las plataformas
+    
+    function Platform (ctx, x, y){
+        this.x=x;
+        this.y=y;
+        this.width = 50;
+        this.height = 20;
+        this.image = new Image();
+        this.image.src = 'pictures/platform.png';
+        this.ctx = ctx;
+        this.drawPlatform = function(){
+            this.ctx.drawImage(this.image,this.x, this.y, this.width, this.height)};
+        this.crashWith = function(player){
+                return  (this.x < player.x + player.width) &&
+                        (this.x + this.width > player.x) &&
+                        (this.y < player.y + player.height) &&
+                        (this.y + this.height > player.y);
+            }
+    }
+    
+     
 
 // Este es mi jugador
-    player= new Player(ctx)
-    diego= new Player(ctx)
     function Player(ctx){
         CheckCollition.call(this)
         this.x = 20,
@@ -237,25 +303,12 @@ function checkMinionCollision(){
         this.jumping= false;
         this.left = true;
         this.right = false;
-    };
+    
     //Esto dibuja a player
         Player.prototype.drawPlayer = function()
         {
         this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)}   
-        function drawMyPlayer()
-	    {
-	    	player.drawPlayer()
-        }
-        
-        Player.prototype.drawDiego = function()
-        {
-            this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)}   
-            function drawMyDiego()
-        {
-            player.drawDiego()
-        }
-        wtf = 'pictures/giphy.png'
-        console.log(diego.image.src)
+    }
 
 //Este es un enemigo el hongo
 	function Hongo(ctx){
@@ -264,10 +317,10 @@ function checkMinionCollision(){
 		this.y = 165,
 		this.width = 20,
 		this.height = 20,
-		this.speed = 1,
+		this.speed = 2,
 		this.ctx = ctx
 		this.image = new Image();
-		this.image.src = 'pictures/giphy.png'
+		this.image.src = imageHongo;
 	};
 	Hongo.prototype.drawHongo = function(){
 	
@@ -282,7 +335,7 @@ function checkMinionCollision(){
     // Esto los dibuja
 	function drawMyHongo()
 	{
-		if (frames % 200 === 0&&frames<1500) generateHongo();
+		if (frames % 100 === 0 && spawnBliss()===false) generateHongo();
 		hongoArr.forEach(function(hongo)
 		{
             hongo.drawHongo()
@@ -292,21 +345,23 @@ function checkMinionCollision(){
     //Este es su constructor
         bliss= new Bliss(ctx)
         function Bliss(ctx){
-            checkBlissCollision.call(this)
             this.x = 350,
             this.y = 62,
             this.width = 155,
             this.height = 125,
             this.ctx = ctx
             this.image = new Image();
-            this.image.src = 'pictures/bowser.png'
+            this.image.src = 'pictures/bliss.png'
         };
     //Aqui aparece
         function spawnBliss(){
-            if (frames>150
+            if (score===7
             ){
                 bliss.drawBliss();
                 return true
+            }
+            else {
+                return false
             }
                 }
     //Esto lo dibuja
@@ -315,16 +370,29 @@ function checkMinionCollision(){
         }
     //Los minions de bliss
     function Minion(ctx){
-        checkMinionCollision.call(this)
+        //checkMinionCollision.call(this)
         this.x = 350,
 		this.y = 150,
 		this.width = 40,
         this.height = 40,
-        this.speed= 1,
+        this.speed= 3.5,
 		this.ctx = ctx
 		this.image = new Image();
-		this.image.src = 'pictures/taco.png'
+        this.image.src = imageMinion;
+        this.crashWith = function(player){
+            return  (this.x < player.x + player.width) &&
+                    (this.x + this.width > player.x) &&
+                    (this.y < player.y + player.height) &&
+                    (this.y + this.height > player.y);
+        }
     };
+    function checkIfMinionCrash(){
+        minionArr.forEach(m=>{
+            if(m.crashWith(player)){
+                stopGame();
+            };
+        })
+    }
     Minion.prototype.drawMinion = function(){
 	
 		this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
@@ -336,7 +404,7 @@ function checkMinionCollision(){
 	}
     function drawMyMinion()
 	{
-        if (spawnBliss() === true&& frames%150===0) generateMinion();
+        if (frames%400===0&&frames>1&&spawnBliss()===true) generateMinion();
 		minionArr.forEach(function(minion)
 		{
             minion.drawMinion()
@@ -345,13 +413,16 @@ function checkMinionCollision(){
 	document.body.addEventListener("keydown", function(e)
 	{
         keys[e.keyCode] = true;
-        if (keys[27]){
-            $('.startScreen').hide();
+        if (keys[32]){
+            $('.welcome').hide();
+            audio.play()
             }
-        if (keys[49]){
-            $('.selectCharacter').hide();
+        if (keys[72]){
+            $('.startScreen').hide();
             startGame();
-            }   
+            
+        }
+        
 	});
 	document.body.addEventListener("keyup", function(e)
 	{
