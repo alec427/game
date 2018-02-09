@@ -1,6 +1,6 @@
 $(document).ready(function()
 {
-    
+  
 // Este es el canvas
 	var canvas = document.getElementById("canvas"),
     ctx = canvas.getContext("2d"),
@@ -9,10 +9,14 @@ $(document).ready(function()
     function startScreen(){
         ctx.fillRect(0,0,500,200)
     }
+    function selectCharacter(){
+        ctx.fillRect(0,0,500,200)
+    }
+    
     
 //Estas son las vars
 	keys = [],
-	gravity = .09;
+	gravity = .1;
 	canvas.width = width;
 	canvas.height = height;
 	x = 0
@@ -53,6 +57,19 @@ $(document).ready(function()
         }
     }
 
+    function collisionBliss(){
+        
+          if(player.crashWith(bliss)){
+                stopGame();
+            }
+        }
+    function checkBlissCollision(){
+      this.crashWith = function(bliss){
+        return  (this.x < bliss.x + bliss.width) &&
+                (this.y < bliss.y + bliss.height) &&
+                (this.y + this.height > bliss.y) &&
+                (this.x + this.width > bliss.x);
+    }}
 
 
     function killHongo(){
@@ -64,7 +81,8 @@ $(document).ready(function()
 		bg: 'pictures/background2.png',
 		marioright: 'pictures/mario2.png',
 		marioleft: 'pictures/mario.png',
-		giphy: 'pictures/giphy.png'
+        giphy: 'pictures/giphy.png',
+        test: 'pictures/poulpi.png',
 	}
     // Mario Volteando a la derecha
 	var mar = new Image()
@@ -105,19 +123,18 @@ $(document).ready(function()
 
 // Esta funcion refreshea todo y le da movimiento al jugador
 	function update(){
-        console.log(frames)
     // Aqui esta todo lo de el movimiento del jugador
         //Aqui es el listener para los keys
-            if (keys[38] || keys[32]) {
-            // up arrow or space
+            if (keys[87]) {
+            // up
             if(!player.jumping){
             player.jumping = true;
             player.image=mar3
             player.velY = -player.speed*2;
             }
             }
-            if (keys[39]) {
-                // right arrow
+            if (keys[68]) {
+                // right
                 if (player.velX < player.speed) {             
                     player.velX++;     
                     player.right = true;
@@ -125,8 +142,8 @@ $(document).ready(function()
                                   
                 } 
             }     
-            if (keys[37]) {         
-                // left arrow         
+            if (keys[65]) {         
+                // left  
                 if (player.velX > -player.speed) {
                     player.velX--;
                     player.left = true;
@@ -144,7 +161,6 @@ $(document).ready(function()
 		    {
 		    	player.y = height - player.height - 15;
                 player.jumping = false;
-                player.image= mar2;
 		    }
 		    if (player.x >= width - player.width)
 		    {
@@ -154,9 +170,9 @@ $(document).ready(function()
 		    {
 		    	player.x = 0;
             }
-            // Esto cambia sus fotos
+           //Esto cambia sus fotos
             if (player.jumping){
-                 player.image=mar3
+                 player.image=mar3;
             }else if(player.left){
                 player.image = mar2;
             } else if (player.right){
@@ -166,10 +182,12 @@ $(document).ready(function()
     // Esto es para hacer clear canvas, dibujar todo y hacer refresh
         ctx.clearRect(0, 0, width, height);
         background.draw()
-        drawMyPlayer();
+        spawnBliss();
+        drawMyDiego();
         drawMyHongo();
-        collisionHongo()
-        checkHongo();
+        //collisionHongo();
+        collisionBliss();
+        //stopHongo();
     }
 // Este es mi background
 	background = {
@@ -188,6 +206,7 @@ $(document).ready(function()
 
 // Este es mi jugador
     player= new Player(ctx)
+    diego= new Player(ctx)
     function Player(ctx){
         CheckCollition.call(this)
         this.x = 20,
@@ -199,8 +218,8 @@ $(document).ready(function()
         this.velY = 0;
         this.ctx = ctx
         this.image = new Image();
-        this.image.src = 'pictures/mario.png'
-        this.jumping= false
+        this.image.src; 
+        this.jumping= false;
         this.left = true;
         this.right = false;
     };
@@ -211,7 +230,17 @@ $(document).ready(function()
         function drawMyPlayer()
 	    {
 	    	player.drawPlayer()
-	    }
+        }
+        
+        Player.prototype.drawDiego = function()
+        {
+            this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)}   
+            function drawMyDiego()
+        {
+            player.drawDiego()
+        }
+        wtf = 'pictures/giphy.png'
+        console.log(diego.image.src)
 
 //Este es un enemigo el hongo
 	function Hongo(ctx){
@@ -227,11 +256,11 @@ $(document).ready(function()
 		this.image = new Image();
 		this.image.src = 'pictures/giphy.png'
 	};
-	Hongo.prototype.drawHongo = function()
-	{
+	Hongo.prototype.drawHongo = function(){
+	
 		this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
 		this.x -= this.speed
-	}
+    }
     //Esto los va generando en el array vacio
 	function generateHongo()
 	{
@@ -240,12 +269,40 @@ $(document).ready(function()
     // Esto los dibuja
 	function drawMyHongo()
 	{
-		if (frames % 120 === 0) generateHongo();
+		if (frames % 200 === 0&&frames<1500) generateHongo();
 		hongoArr.forEach(function(hongo)
 		{
-			hongo.drawHongo()
+            hongo.drawHongo()
 		})
-	}
+    }
+    //Esto los apaga
+    function stopHongo(){
+        drawMyHongo() === false
+    }
+//Este es el main boss
+    //Este es su constructor
+        bliss= new Bliss(ctx)
+        function Bliss(ctx){
+            checkBlissCollision.call(this)
+            this.x = 350,
+            this.y = 62,
+            this.width = 155,
+            this.height = 125,
+            this.ctx = ctx
+            this.image = new Image();
+            this.image.src = 'pictures/bowser.png'
+        };
+    //Aqui aparece
+        function spawnBliss(){
+            if (frames>1500
+            ){
+                bliss.drawBliss();
+            }
+                }
+    //Esto lo dibuja
+        Bliss.prototype.drawBliss = function(){
+            this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
+        }
 
 //Esto es para poder apretar mas de una tecla      
 	document.body.addEventListener("keydown", function(e)
@@ -253,6 +310,9 @@ $(document).ready(function()
         keys[e.keyCode] = true;
         if (keys[27]){
             $('.startScreen').hide();
+            }
+        if (keys[49]){
+            $('.selectCharacter').hide();
             startGame();
             }   
 	});
@@ -260,6 +320,7 @@ $(document).ready(function()
 	{
 		keys[e.keyCode] = false;
     });
+
 
 
 });
