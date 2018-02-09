@@ -22,8 +22,10 @@ $(document).ready(function()
 	x = 0
 	friction = .9
     hongoArr = []
+    minionArr = []
 	var frames = 0
     var hongo = new Hongo;
+    var minion = new Minion;
     var globalId;
     var interval;
     var player;
@@ -35,7 +37,6 @@ $(document).ready(function()
     function collisionHongo(){
             hongoArr.forEach(function(hongo, index){
               if(player.crashWith(hongo)){
-                console.log(player.crashWith(hongo))
                 if (player.y<hongo.y){
                     hongoArr.splice(index, 1);
                 } else {
@@ -70,6 +71,19 @@ $(document).ready(function()
                 (this.y + this.height > bliss.y) &&
                 (this.x + this.width > bliss.x);
     }}
+function checkMinionCollision(){
+  minionArr.forEach(function(minion){
+    if(player.crashWith(minion)){
+      stopGame();
+    }})}
+    function collisionMinion(){
+        this.crashWith = function(minion){
+          return  (this.x < minion.x + minion.width) &&
+                  (this.x + this.width > minion.x) &&
+                  (this.y < minion.y + minion.height) &&
+                  (this.y + this.height > minion.y);
+        }
+      }
 
 
     function killHongo(){
@@ -183,11 +197,12 @@ $(document).ready(function()
         ctx.clearRect(0, 0, width, height);
         background.draw()
         spawnBliss();
-        drawMyDiego();
-        drawMyHongo();
-        //collisionHongo();
+        //drawMyHongo();
+        drawMyMinion();
+        collisionHongo();
         collisionBliss();
-        //stopHongo();
+        collisionMinion();
+        drawMyPlayer();
     }
 // Este es mi background
 	background = {
@@ -250,8 +265,6 @@ $(document).ready(function()
 		this.width = 20,
 		this.height = 20,
 		this.speed = 1,
-		this.velX = 0,
-		this.velY = 0;
 		this.ctx = ctx
 		this.image = new Image();
 		this.image.src = 'pictures/giphy.png'
@@ -275,10 +288,6 @@ $(document).ready(function()
             hongo.drawHongo()
 		})
     }
-    //Esto los apaga
-    function stopHongo(){
-        drawMyHongo() === false
-    }
 //Este es el main boss
     //Este es su constructor
         bliss= new Bliss(ctx)
@@ -294,16 +303,44 @@ $(document).ready(function()
         };
     //Aqui aparece
         function spawnBliss(){
-            if (frames>1500
+            if (frames>150
             ){
                 bliss.drawBliss();
+                return true
             }
                 }
     //Esto lo dibuja
         Bliss.prototype.drawBliss = function(){
             this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
         }
-
+    //Los minions de bliss
+    function Minion(ctx){
+        checkMinionCollision.call(this)
+        this.x = 350,
+		this.y = 150,
+		this.width = 40,
+        this.height = 40,
+        this.speed= 1,
+		this.ctx = ctx
+		this.image = new Image();
+		this.image.src = 'pictures/taco.png'
+    };
+    Minion.prototype.drawMinion = function(){
+	
+		this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height)
+		this.x -= this.speed
+    }
+    function generateMinion()
+	{
+		minionArr.push(new Minion(ctx))
+	}
+    function drawMyMinion()
+	{
+        if (spawnBliss() === true&& frames%150===0) generateMinion();
+		minionArr.forEach(function(minion)
+		{
+            minion.drawMinion()
+        })}
 //Esto es para poder apretar mas de una tecla      
 	document.body.addEventListener("keydown", function(e)
 	{
