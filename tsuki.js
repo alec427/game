@@ -19,29 +19,44 @@ $(document).ready(function()
 	friction = .9
     hongoArr = []
 	var frames = 0
-    var hongo;
+    var hongo = new Hongo;
     var globalId;
     var interval;
     var player;
     keys = [];
     var myScore;
+    player = new Player
 
 //Checar colision
     function collisionHongo(){
-            hongoArr.forEach(function(hongo){
+            hongoArr.forEach(function(hongo, index){
               if(player.crashWith(hongo)){
-                stopGame();
+                console.log(player.crashWith(hongo))
+                if (player.y<hongo.y){
+                    hongoArr.splice(index, 1);
+                } else {
+                    stopGame();
+                }
               }
             });
           }
 
     function CheckCollition(){
         this.crashWith = function(hongo){
-            return  (this.x < hongo.x + hongo.width) &&
-                    (this.x + this.width > hongo.x) &&
-                    (this.y < hongo.y + hongo.height) &&
-                    (this.y + this.height > hongo.y);
+            if(
+                (this.x < hongo.x + hongo.width) &&
+                (this.y>160)&&
+                (this.x + this.width > hongo.x)
+            ){
+                
+                return true}
         }
+    }
+
+
+
+    function killHongo(){
+        hongoArr.splice()
     }
           
 //Estas son mis images
@@ -53,7 +68,15 @@ $(document).ready(function()
 	}
     // Mario Volteando a la derecha
 	var mar = new Image()
-	mar.src = images.marioright;
+    mar.src = images.marioright;
+    
+    // Mario Volteando a la derecha
+	var mar2 = new Image()
+    mar2.src = images.marioleft;
+
+    // Mario Volteando a la derecha
+	var mar3 = new Image()
+    mar3.src = "pictures/mariojump.png"
 
     //Foto del hongo
 	var hongoimg = new Image()
@@ -82,13 +105,14 @@ $(document).ready(function()
 
 // Esta funcion refreshea todo y le da movimiento al jugador
 	function update(){
+        console.log(frames)
     // Aqui esta todo lo de el movimiento del jugador
         //Aqui es el listener para los keys
             if (keys[38] || keys[32]) {
             // up arrow or space
             if(!player.jumping){
             player.jumping = true;
-            player.image.src = "pictures/mariojump.png";
+            player.image=mar3
             player.velY = -player.speed*2;
             }
             }
@@ -120,7 +144,7 @@ $(document).ready(function()
 		    {
 		    	player.y = height - player.height - 15;
                 player.jumping = false;
-                player.image.src = "pictures/mario.png"
+                player.image= mar2;
 		    }
 		    if (player.x >= width - player.width)
 		    {
@@ -130,22 +154,23 @@ $(document).ready(function()
 		    {
 		    	player.x = 0;
             }
-        if (player.jumping){
-             player.image.src = 'pictures/mariojump.png'}
-        else if(player.left){
-            player.image.src = 'pictures/mario.png'
-             }
-             else{
-                player.image.src = 'pictures/mario2.png'
-             }
+            // Esto cambia sus fotos
+            if (player.jumping){
+                 player.image=mar3
+            }else if(player.left){
+                player.image = mar2;
+            } else if (player.right){
+                    player.image = mar;
+            }
 
     // Esto es para hacer clear canvas, dibujar todo y hacer refresh
         ctx.clearRect(0, 0, width, height);
         background.draw()
         drawMyPlayer();
         drawMyHongo();
-        collisionHongo()}
-
+        collisionHongo()
+        checkHongo();
+    }
 // Este es mi background
 	background = {
 		posX: 0,
@@ -165,7 +190,7 @@ $(document).ready(function()
     player= new Player(ctx)
     function Player(ctx){
         CheckCollition.call(this)
-        this.x = 480,
+        this.x = 20,
         this.y = 165,
         this.width = 20,
         this.height = 20,

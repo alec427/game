@@ -6,7 +6,11 @@ position: relative;
 
 .startScreen{
 position: absolute;
-background-color: black;
+background-image: url('pictures/startscreen.jpg');
 width: 501px;
 height: 201px;
+object-fit: contain;
+max-width:100%;
+max-height:100%;
+
 }
