@@ -229,7 +229,6 @@ $(document).ready(function()
         checkIfMinionCrash();
         playtamales();
         playboss();
-        victory();
 
         if (frames%200===0){
             platforms.push (new Platform(ctx, 500, 120));
